@@ -24,8 +24,8 @@ exports.findAll = async (req, res) => {
       .sort("-updated_at");
     const pagination = {
       total,
-      per_page,
-      page_number,
+      per_page: filter !== null && per_page < total ? total : per_page,
+      page_number: filter !== null && per_page < total ? 1 : page_number,
     };
     res.send({
       status: true,

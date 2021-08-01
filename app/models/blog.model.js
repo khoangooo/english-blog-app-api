@@ -2,7 +2,8 @@ module.exports = (Schema, model) => {
   const blogSchema = new Schema(
     {
       title: { type: String, required: true },
-      detail: { type: String, required: true },
+      detail: { type: String },
+      coverImage: { type: String },
       views: { type: Number },
       lastSeenAt: { type: Date },
       slug: { type: String, slug: "title", unique: true },
