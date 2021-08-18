@@ -8,4 +8,9 @@ const getFilterFields = (filterString = {}) => {
   return obj;
 };
 
-module.exports = { getFilterFields };
+const a2b = str => Buffer.from(str, 'base64').toString('binary');
+const b2a = str => new Buffer.from(str, 'binary').toString('base64');
+
+module.exports = { getFilterFields, a2b, b2a};
+
+

@@ -70,6 +70,8 @@ exports.create = async (req, res) => {
   const blog = {
     title: req.body.title,
     detail: req.body.detail,
+    coverImage: req.body.coverImage,
+    
   };
 
   // Save multiple blogs in the collection
