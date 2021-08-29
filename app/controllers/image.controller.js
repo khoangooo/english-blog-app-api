@@ -1,6 +1,12 @@
 "use strict";
+
 //googleapis
 const { google } = require("googleapis");
+google.options({
+  // All requests made with this object will use these settings unless overridden.
+  timeout: 1800,
+});
+
 const base64Img = require("base64-img");
 //path module
 const path = require("path");
@@ -13,15 +19,15 @@ const utils = require("../utils");
 
 //client id
 const CLIENT_ID =
-  "1093649560880-1734smvuqpvkivcs34tqr5bir0vc7obq.apps.googleusercontent.com";
+  "1093649560880-gjhacf9tlmlro96olhf14g63ds16o54b.apps.googleusercontent.com";
 
 //client secret
-const CLIENT_SECRET = "vo2U5rZHzGAeGY9e8Jt_wiwy";
+const CLIENT_SECRET = "_imvyrsXZdOdj1ZRTRb7BBTx";
 
 const REDIRECT_URI = "https://developers.google.com/oauthplayground/";
 
 const REFRESH_TOKEN =
-  "1//044-ZZq8iCCeFCgYIARAAGAQSNwF-L9IrhxiRVJffIyFDa0qoxtG06bS6J7BLUnbaTvb2bKhbxjO_O7U8h4Y5XLudTK9Z2uYvp9k";
+  "1//04TsH77rEnkNzCgYIARAAGAQSNwF-L9IrPq8R8oBHeSJdVuvETS4BI-votKFgimP1yDNPYTXv29J6UpV8qgSconmOKOOvAMcWM4U";
 
 const oauth2Client = new google.auth.OAuth2(
   CLIENT_ID,
@@ -36,59 +42,8 @@ const drive = google.drive({
   auth: oauth2Client,
 });
 
-const filePath = path.join(__dirname, "macos.jpg");
-
-exports.upload = async (req, res) => {
-  const image = req.body.file;
-  const { fileName } = req.body;
-  fs.writeFile(`./${fileName}` , image, 'base64', function(err) {
-    err ? console.log(err) : console.log("done");
-  });
-  // let buff = new Buffer(image, "base64");
-  // fs.writeFile(`./${fileName}`, buff, function (err) {
-  //   err ? console.log(err) : console.log("done");
-  // });
-
-  // base64Img.img(image, "../public/upload", Date.now(), (err, filepath) => {
-  //   const pathArr = filepath.split("/")
-  //   const fileName= pathArr[pathArr.length -1]
-  //   res.status(200).json({
-  //     status: true,
-  //     url: `http://127.0.0.1:5000/${fileName}`
-  //   })
-  // })
-
-  // try {
-  //   const response = await drive.files.create({
-  //     requestBody: {
-  //       name: "macos_uploaded.jpg",
-  //       mimeType: "image/jpg",
-  //     },
-  //     media: {
-  //       mimeType: "image/",
-  //       body: fs.createReadStream(filePath),
-  //     },
-  //   });
-  //   console.log(response.data);
-  // } catch (err) {
-  //   console.log(err.message);
-  // }
-};
-
-exports.delete = async () => {
+exports.generatePublicUrl = async (fileId) => {
   try {
-    const response = await drive.files.delete({
-      fileId: "1HH5rvMniSlp1O4CPgtntRlJ7qKcypWno",
-    });
-    console.log(response.data, response.status);
-  } catch (err) {
-    console.log(err.message);
-  }
-};
-
-exports.generatePublicUrl = async () => {
-  try {
-    const fileId = "1cB0zs8OkCOv3zGMXeEiiBbFLmtYKk8D_";
     await drive.permissions.create({
       fileId,
       requestBody: {
@@ -100,7 +55,51 @@ exports.generatePublicUrl = async () => {
       fileId,
       fields: "webViewLink, webContentLink",
     });
-    console.log(result.data);
+    return result.data;
+  } catch (err) {
+    return err.message;
+  }
+};
+
+exports.upload = async (req, res) => {
+  const { file } = req.body;
+  const { fileName } = req.body;
+  fs.writeFile(`./app/static/${fileName}`, file, "base64", function (err) {
+    err ? console.log(err) : console.log("done");
+  });
+
+  const filePath = `./app/static/${fileName}`;
+  const fileMetadata = { name: fileName };
+  const media = { mimeType: `image/jpeg`, body: fs.createReadStream(filePath) };
+  try {
+    const response = await drive.files.create({
+      resource: fileMetadata,
+      media: media,
+      fields: "id",
+    });
+    res.send({
+      status: true,
+      message: `Uploading image successfully.`,
+      data: {
+        id: response.data.id,
+        image_url: `https://drive.google.com/file/d/${response.data.id}/view`,
+      },
+    });
+    // fs.unlinkSync(filePath);
+  } catch (err) {
+    res.send({
+      status: false,
+      message: err.message ?? `Uploading image failed.`,
+    });
+  }
+};
+
+exports.delete = async () => {
+  try {
+    const response = await drive.files.delete({
+      fileId: "1HH5rvMniSlp1O4CPgtntRlJ7qKcypWno",
+    });
+    console.log(response.data, response.status);
   } catch (err) {
     console.log(err.message);
   }

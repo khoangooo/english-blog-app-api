@@ -4,8 +4,8 @@ const slug = require("mongoose-slug-generator");
 const dbConfig = require("../config/db.config.js");
 const db = {};
 
-const MONGODB_URI = ""
-  // "mongodb+srv://demoMongoDB:1234@demo-mongodb.izjqv.mongodb.net/english-blog-app?retryWrites=true&w=majority";
+const MONGODB_URI = 
+  "mongodb+srv://demoMongoDB:1234@demo-mongodb.izjqv.mongodb.net/english-blog-app?retryWrites=true&w=majority";
 mongoose
   .connect(
     MONGODB_URI ||
